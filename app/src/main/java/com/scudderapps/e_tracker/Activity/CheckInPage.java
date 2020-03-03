@@ -32,6 +32,7 @@ public class CheckInPage extends AppCompatActivity {
 
     AttendanceDetails attendanceDetails;
     AttendanceDatabase attendanceDatabase;
+    List<AttendanceDetails> statusAll;
     String code;
 
     @Override
@@ -50,7 +51,7 @@ public class CheckInPage extends AppCompatActivity {
         CheckOut.setEnabled(false);
         CheckIn.setEnabled(false);
 
-        attendanceDetails = new AttendanceDetails();
+        
         attendanceDatabase = Room.databaseBuilder(getApplicationContext(),
                 AttendanceDatabase.class, "AttendanceData")
                 .allowMainThreadQueries()
@@ -65,56 +66,59 @@ public class CheckInPage extends AppCompatActivity {
             public void onClick(View v) {
                 ECode = eCode.getText().toString();
                 EPass = ePass.getText().toString();
-
+    
                 List<EmployeeData> allEmployeeList = MainActivity.employeeDatabase.employeeDAO().allEmployee();
-
+    
                 for (EmployeeData allData : allEmployeeList) {
                     final String allCode = allData.getCode();
                     String allPass = allData.getPassword();
-
+        
                     if (ECode.equals(allCode) && EPass.equals(allPass)) {
-
+            
                         List<EmployeeData> employeeDataList = MainActivity.employeeDatabase.employeeDAO().getEmployee(ECode, EPass);
-
-                        for (EmployeeData data : employeeDataList){
-
+            
+                        for (EmployeeData data : employeeDataList) {
+                
                             String name = data.getName();
                             code = data.getCode();
                             String dob = data.getDate();
-
+                
                             nameView.setText(name);
                             codeView.setText(code);
                             dobView.setText(dob);
-
-                            List<AttendanceDetails> statusDetails = attendanceDatabase.attendanceDAO().statusDetail(ECode, check_in);
-                            String l = String.valueOf(statusDetails.size());
+                
+//                            List<AttendanceDetails> statusDetails = attendanceDatabase.attendanceDAO().statusDetail(ECode, check_in);
+                            
+                            statusAll = attendanceDatabase.attendanceDAO().statusAll(ECode, check_in);
+    
+                            String l = String.valueOf(statusAll.size());
                             Log.v("length", l);
-
-                            if (!statusDetails.isEmpty() && statusDetails.size() == 1) {
-                                for (AttendanceDetails statusString : statusDetails) {
-                                    String status = statusString.getStatus();
-
-                                    if (status.equals("Checked In")) {
-                                        CheckOut.setEnabled(true);
-                                        CheckIn.setEnabled(false);
-                                    } else if (status.equals("Checked Out")) {
+                
+                            if (!statusAll.isEmpty() ) {
+                                for (AttendanceDetails statusString : statusAll) {
+                                    attendanceDetails = statusString;
+                                    if (statusString.getCheckInStatus().equals("Checked In")) {
+        
+                                        if (!statusString.getCheckOutStatus().isEmpty() || statusString.getCheckOutStatus().equals("Checked Out")) {
+                                            CheckOut.setEnabled(false);
+                                            CheckIn.setEnabled(false);
+                                        } else {
+                                            CheckOut.setEnabled(true);
+                                            CheckIn.setEnabled(false);
+                                        }
+        
+                                    } else {
                                         CheckOut.setEnabled(false);
                                         CheckIn.setEnabled(true);
                                     }
+    
                                 }
-                            } else if (statusDetails.size() == 2){
-
-                                CheckIn.setEnabled(false);
-                                CheckOut.setEnabled(false);
-
                             } else {
-                               CheckIn.setEnabled(true);
-                               CheckOut.setEnabled(false);
+                                attendanceDetails = new AttendanceDetails();
+                                CheckOut.setEnabled(false);
+                                CheckIn.setEnabled(true);
                             }
-
                         }
-                    } else {
-//                        Toast.makeText(CheckInPage.this, "Please enter the correct details", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -126,13 +130,19 @@ public class CheckInPage extends AppCompatActivity {
                 String status = "Checked In";
                 attendanceDetails.setCode(code);
                 attendanceDetails.setCreatedAt(check_in);
+                attendanceDetails.setCheckInStatus(status);
                 attendanceDetails.setStatus(status);
-
-                attendanceDatabase.attendanceDAO().addAttendance(attendanceDetails);
+                if (statusAll.isEmpty()){
+                    attendanceDatabase.attendanceDAO().addAttendance(attendanceDetails);
+                } else {
+                    attendanceDatabase.attendanceDAO().updateAttendance(attendanceDetails);
+                }
+                
                 Toast.makeText(CheckInPage.this, "Checked In", Toast.LENGTH_SHORT).show();
                 back();
             }
         });
+        
 
         CheckOut.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -140,9 +150,13 @@ public class CheckInPage extends AppCompatActivity {
                 String status = "Checked Out";
                 attendanceDetails.setCode(code);
                 attendanceDetails.setCreatedAt(check_in);
+                attendanceDetails.setCheckOutStatus(status);
                 attendanceDetails.setStatus(status);
-
-                attendanceDatabase.attendanceDAO().addAttendance(attendanceDetails);
+                if (statusAll.isEmpty()){
+                    attendanceDatabase.attendanceDAO().addAttendance(attendanceDetails);
+                } else {
+                    attendanceDatabase.attendanceDAO().updateAttendance(attendanceDetails);
+                }
                 Toast.makeText(CheckInPage.this, "Checked Out", Toast.LENGTH_SHORT).show();
                 back();
             }

@@ -6,7 +6,7 @@ import com.scudderapps.e_tracker.DATA.EmployeeData;
 import androidx.room.Database;
 import androidx.room.RoomDatabase;
 
-@Database(entities = {EmployeeData.class}, version = 1)
+@Database(entities = {EmployeeData.class}, version = 1, exportSchema = false)
 
 public abstract class EmployeeDatabase extends RoomDatabase{
 

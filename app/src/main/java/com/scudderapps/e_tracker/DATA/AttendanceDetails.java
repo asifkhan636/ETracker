@@ -14,6 +14,31 @@ public class AttendanceDetails {
     private String Code;
     private String createdAt;
     private String Status;
+    
+    public String getCheckInStatus() {
+        if (checkInStatus == null){
+            return "";
+        }
+        return checkInStatus;
+    }
+    
+    public void setCheckInStatus(String checkInStatus) {
+        this.checkInStatus = checkInStatus;
+    }
+    
+    public String getCheckOutStatus() {
+        if (checkOutStatus == null){
+            return "";
+        }
+        return checkOutStatus;
+    }
+    
+    public void setCheckOutStatus(String checkOutStatus) {
+        this.checkOutStatus = checkOutStatus;
+    }
+    
+    private String checkInStatus;
+    private String checkOutStatus;
 
     public int getId() {
         return id;
